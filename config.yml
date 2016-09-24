@@ -1,0 +1,17 @@
+---
+http:
+- port: 8081
+  endpoints:
+  - uri: "/get"
+    status: 200
+    body: "OK"
+    latency:
+      min: 10
+      max: 50
+
+  - uri: "/bad"
+    status: 500
+    body: "BAD"
+    latency:
+      min: 10
+      max: 50
