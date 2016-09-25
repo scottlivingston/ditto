@@ -6,12 +6,12 @@ import org.scalatest.{Matchers, WordSpec}
 
 class YamlParseSpec extends WordSpec with Matchers {
   val obj =
-    Responses(List(
+    Responses(Option(List(
       HttpServerConfig(8081, List(
         HttpEndpoint("/get", 200, "OK", Latency(10, 50)),
         HttpEndpoint("/bad", 500, "BAD", Latency(10, 50))
       ))
-    ))
+    )))
 
 
   "Valid Yaml structure" should {
