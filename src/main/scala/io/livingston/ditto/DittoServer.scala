@@ -1,12 +1,14 @@
 package io.livingston.ditto
 
 import com.twitter.finagle.http.{Request, Response, Status}
-import com.twitter.finagle.{Http, Service}
-import com.twitter.util.{Await, Duration, Future, Stopwatch}
+import com.twitter.finagle.thrift.Protocols
+import com.twitter.finagle.{Http, Service, Thrift}
+import com.twitter.util.{Await, Future, Try}
+import org.apache.thrift.transport.TMemoryInputTransport
 
 object DittoServer extends App with DittoConfig {
 
-  val http = httpServers map { case (port, endpoints) =>
+  val http = httpServers.map { case (port, endpoints) =>
     val service = new Service[Request, Response] {
       def apply(request: Request): Future[Response] = {
         endpoints.get(request.uri).map { e =>
@@ -15,13 +17,32 @@ object DittoServer extends App with DittoConfig {
           Thread.sleep(e.latency.sleepTime)
           Future.value(response)
         }.getOrElse {
-          request.close()
-          Future.exception(new Exception("Invalid Request"))
+          Future.value(Response(request.version, Status.BadRequest))
         }
       }
     }
     Http.serve(s":$port", service)
   }
 
-  Await.ready(http.head)
+//  val thrift = thriftServers.map { case (port, endpoints) =>
+//    val service = new Service[Array[Byte], Array[Byte]] {
+//      def apply(request: Array[Byte]): Future[Array[Byte]] = {
+//        val inputTransport = new TMemoryInputTransport(request)
+//        val thriftRequest = Protocols.binaryFactory().getProtocol(inputTransport)
+//        Try {
+//          val msg = thriftRequest.readMessageBegin()
+//          endpoints.get(msg.name).map { e =>
+//            val response = Array.empty[Byte]
+//            Thread.sleep(e.latency.sleepTime)
+//            Future.value(response)
+//          }.getOrElse {
+//            Future.exception(new Exception("Invalid Request"))
+//          }
+//        }.getOrElse(Future.exception(new Exception("")))
+//      }
+//    }
+//    Thrift.server.serve(s":$port", service)
+//  }
+
+  Await.ready(Future.never)
 }

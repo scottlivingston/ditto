@@ -1,20 +1,22 @@
 package io.livingston.ditto
 
+import io.livingston.ditto.responses.{Latency, Responses}
+import io.livingston.ditto.responses.http.{HttpEndpoint, HttpServerConfig}
 import org.scalatest.{Matchers, WordSpec}
 
 class YamlParseSpec extends WordSpec with Matchers {
   val obj =
     Responses(List(
-      Server(8081, List(
-        Endpoint("/get", 200, "OK", Latency(10, 50)),
-        Endpoint("/bad", 500, "BAD", Latency(10, 50))
+      HttpServerConfig(8081, List(
+        HttpEndpoint("/get", 200, "OK", Latency(10, 50)),
+        HttpEndpoint("/bad", 500, "BAD", Latency(10, 50))
       ))
     ))
 
 
   "Valid Yaml structure" should {
     "unserialize correctly" in {
-      import ResponsesProtocol._
+      import io.livingston.ditto.responses.ResponsesProtocol._
       import net.jcazevedo.moultingyaml._
 
       val str = """---
