@@ -13,5 +13,5 @@ http:
     status: 500
     body: "BAD"
     latency:
-      min: 10
-      max: 50
+      min: 1
+      max: 5
