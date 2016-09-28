@@ -2,8 +2,8 @@ package io.livingston.ditto
 
 import com.twitter.util.Try
 import com.typesafe.config.ConfigFactory
-import io.livingston.ditto.responses.http.HttpEndpoint
-import io.livingston.ditto.responses.thrift.ThriftEndpoint
+import io.livingston.ditto.http.HttpEndpoint
+import io.livingston.ditto.thrift.ThriftEndpoint
 import net.jcazevedo.moultingyaml._
 
 trait DittoConfig {

@@ -6,7 +6,7 @@ import com.twitter.finagle.{Http, Service, Thrift}
 import com.twitter.util.{Await, Future, Try}
 import org.apache.thrift.transport.TMemoryInputTransport
 
-object DittoServer extends App with DittoConfig {
+object Ditto extends App with DittoConfig {
 
 //  val http = httpServers.map { case (port, endpoints) =>
 //    val service = new Service[Request, Response] {

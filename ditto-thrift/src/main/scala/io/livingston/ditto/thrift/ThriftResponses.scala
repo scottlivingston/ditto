@@ -1,4 +1,4 @@
-package io.livingston.ditto.responses.thrift
+package io.livingston.ditto.thrift
 
 import io.livingston.ditto.responses.Latency
 import net.jcazevedo.moultingyaml.DefaultYamlProtocol

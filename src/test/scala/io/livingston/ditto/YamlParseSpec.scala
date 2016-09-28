@@ -1,7 +1,8 @@
 package io.livingston.ditto
 
+import io.livingston.ditto.http.{HttpEndpoint, HttpServerConfig}
 import io.livingston.ditto.responses.{Latency, Responses}
-import io.livingston.ditto.responses.http.{HttpEndpoint, HttpServerConfig}
+import io.livingston.ditto.responses.http.HttpEndpoint
 import org.scalatest.{Matchers, WordSpec}
 
 class YamlParseSpec extends WordSpec with Matchers {

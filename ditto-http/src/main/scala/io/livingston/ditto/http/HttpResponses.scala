@@ -1,4 +1,4 @@
-package io.livingston.ditto.responses.http
+package io.livingston.ditto.http
 
 import io.livingston.ditto.responses.{Endpoint, Latency, ServerConfig}
 import net.jcazevedo.moultingyaml.DefaultYamlProtocol
