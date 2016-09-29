@@ -3,6 +3,7 @@ http:
 - port: 8081
   endpoints:
   - uri: "/get"
+    method: "GET"
     status: 200
     body: "OK"
     latency:
@@ -10,6 +11,7 @@ http:
       max: 50
 
   - uri: "/bad"
+    method: "GET"
     status: 500
     body: "BAD"
     latency:
@@ -20,7 +22,8 @@ http:
 thrift:
 - port: 8082
   endpoints:
-    - function: "test"
-      latency:
-        min: 10
-        max: 100
+  - msg: "test"
+    body: ""
+    latency:
+      min: 10
+      max: 100

@@ -4,6 +4,7 @@ val sharedSettings = Seq(
   scalaVersion := "2.11.8",
   resolvers += "twttr" at "https://maven.twttr.com/",
   libraryDependencies ++= Seq(
+    "net.jcazevedo" %% "moultingyaml" % "0.3.0",
     "org.scalactic" %% "scalactic" % "3.0.0",
     "org.scalatest" %% "scalatest" % "3.0.0" % "test"
   )
@@ -19,7 +20,6 @@ lazy val ditto = Project(
   name := dittoName,
   scroogeThriftSourceFolder in Compile <<= baseDirectory { base => base / "src/test/thrift" },
   libraryDependencies ++= Seq(
-    "net.jcazevedo" %% "moultingyaml" % "0.3.0",
     "com.typesafe" % "config" % "1.3.1"
   )
 ).dependsOn(dittoCore, dittoHttp, dittoThrift)
@@ -50,7 +50,7 @@ lazy val dittoHttp = Project(
   libraryDependencies ++= Seq(
     "com.twitter" %% "finagle-http" % "6.38.0"
   )
-)
+).dependsOn(dittoCore)
 
 lazy val dittoThriftName = s"$dittoName-thrift"
 lazy val dittoThrift = Project(
@@ -63,4 +63,4 @@ lazy val dittoThrift = Project(
   libraryDependencies ++= Seq(
     "com.twitter" %% "finagle-thrift" % "6.38.0"
   )
-)
+).dependsOn(dittoCore)
