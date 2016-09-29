@@ -6,17 +6,19 @@ Yaml powered service mocking server for HTTP and Thrift protocols.
 ditto is powered entirely by the YAML config file it reads.  A basic config
 that mocks a simple HTTP based service with one endpoint could look like this:
 
-    ---
-    http:
-    - port: 8081
-      endpoints:
-      - uri: "/get"
-        method: "GET"
-        status: 200
-        body: "OK"
-        latency:
-          min: 10
-          max: 50
+```yaml
+---
+http:
+- port: 8081
+  endpoints:
+  - uri: "/get"
+    method: "GET"
+    status: 200
+    body: "OK"
+    latency:
+      min: 10
+      max: 50
+```
 
 This will bind to port `8081` and respond to `GET` requests to `/get` with an
 HTTP status code of `200` and a body that contains `OK`. Each call to the mock
