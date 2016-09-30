@@ -1,17 +1,19 @@
 package io.livingston.ditto.thrift
 
 import com.twitter.finagle.thrift.Protocols
-import com.twitter.finagle.{Service, Thrift}
-import com.twitter.util.Future
+import com.twitter.finagle.{ListeningServer, Service, Thrift}
+import com.twitter.util.{Await, Future}
 import com.typesafe.scalalogging.LazyLogging
 import io.livingston.ditto.Responder
 import org.apache.thrift.transport.TMemoryInputTransport
 
+import scala.collection.immutable.Iterable
 import scala.util.Try
 
 class ThriftResponder extends Responder with LazyLogging {
   val protocol: String = "thrift"
   private var _serverConfigs = Seq.empty[ThriftServerConfig]
+  private var _listeningServers = Iterable.empty[ListeningServer]
 
   def announce(): Unit = {
     _serverConfigs.foreach { server =>
@@ -30,7 +32,7 @@ class ThriftResponder extends Responder with LazyLogging {
         })
       }
 
-      val thrift = thriftServers.map { case (port, endpoints) =>
+      _listeningServers = thriftServers.map { case (port, endpoints) =>
         val service = new Service[Array[Byte], Array[Byte]] {
           def apply(request: Array[Byte]): Future[Array[Byte]] = {
             val inputTransport = new TMemoryInputTransport(request)
@@ -50,5 +52,10 @@ class ThriftResponder extends Responder with LazyLogging {
         Thrift.server.serve(s":$port", service)
       }
     }
+  }
+
+  def close(): Unit = {
+    import com.twitter.conversions.time._
+    Await.all( _listeningServers.map(_.close()).toSeq, 5.seconds )
   }
 }

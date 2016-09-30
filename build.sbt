@@ -18,7 +18,6 @@ lazy val ditto = Project(
     sharedSettings
 ).settings(
   name := dittoName,
-  scroogeThriftSourceFolder in Compile <<= baseDirectory { base => base / "src/test/thrift" },
   libraryDependencies ++= Seq(
     "com.typesafe" % "config" % "1.3.1"
   )
@@ -60,6 +59,7 @@ lazy val dittoThrift = Project(
     sharedSettings
 ).settings(
   name := dittoThriftName,
+  scroogeThriftSourceFolder in Compile <<= baseDirectory { base => base / "src/test/thrift" },
   libraryDependencies ++= Seq(
     "com.twitter" %% "finagle-thrift" % "6.38.0"
   )
