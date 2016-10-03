@@ -1,5 +1,7 @@
 package io.livingston.ditto.thrift
 
+import java.util.Base64
+
 import com.twitter.finagle.thrift.{Protocols, ThriftClientRequest}
 import com.twitter.finagle.{ListeningServer, Service, Thrift}
 import com.twitter.util.{Await, Future}
@@ -7,6 +9,15 @@ import com.typesafe.scalalogging.LazyLogging
 import org.apache.thrift.transport.TMemoryInputTransport
 
 import scala.util.Try
+
+case class CallRecord(msg: String, request: String, response: String)
+object CallRecord {
+  private def base64(bytes: Array[Byte]): String = Base64.getEncoder.encodeToString(bytes)
+
+  def apply(msg: String, request: Array[Byte], response: Array[Byte]): CallRecord = {
+    CallRecord(msg, base64(request), base64(response))
+  }
+}
 
 object ThriftTrainer extends App with LazyLogging {
   val trainer = new ThriftTrainer()
@@ -24,7 +35,7 @@ class ThriftTrainer {
   val port = 8080
   val client = Thrift.client.newClient(s":8081").toService
 
-  var trainedResponses = Set.empty[(String, Array[Byte])]
+  var trainedResponses = Set.empty[CallRecord]
 
   val service = new Service[Array[Byte], Array[Byte]] {
     def apply(request: Array[Byte]): Future[Array[Byte]] = {
@@ -34,7 +45,7 @@ class ThriftTrainer {
         Try {
           val msg = thriftRequest.readMessageBegin()
           trainedResponses.synchronized {
-            trainedResponses = trainedResponses + (msg.name -> response)
+            trainedResponses = trainedResponses + CallRecord(msg.name, request, response)
           }
         }
         response
@@ -46,12 +57,17 @@ class ThriftTrainer {
 
   def start() = server = Option(Thrift.server.serve(s":$port", service))
 
-  def conf: String = trainedResponses.foldLeft(Map.empty[String, Seq[String]]) { (acc, call) =>
-    acc.get(call._1) match {
-      case Some(list) => acc + (call._1 -> (list :+ call._2.map("%02X" format _).mkString))
-      case None => acc + (call._1 -> Seq(call._2.map("%02X" format _).mkString))
-    }
-  }.toString
+  def conf: String = trainedResponses.foldLeft(Map.empty[String, Map[String, Set[String]]]) { (acc, call) =>
+      val requests = acc.get(call.msg) match {
+        case Some(rr) => rr
+        case None => Map.empty[String, Set[String]]
+      }
+      val responses = requests.get(call.request) match {
+        case Some(set) => set + call.response
+        case None => Set(call.response)
+      }
+      acc + (call.msg -> (requests + (call.request -> responses)))
+    }.toString
 
   def close(): Unit = Await.all(client.close(), server.get.close())
 }

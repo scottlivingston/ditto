@@ -32,8 +32,8 @@ class ThriftResponderSpec extends WordSpec with Matchers with BeforeAndAfter {
 
   "Thrift config" should {
     "respond correctly to thrift requests" in {
-      val client = Thrift.client.newIface[Test[Future]](s":$port")
-      val response = Await.result(client.test())
+      val client = Thrift.client.newIface[EchoService.FutureIface](s":$port")
+      val response = Await.result(client.echoInt(1))
     }
   }
 }

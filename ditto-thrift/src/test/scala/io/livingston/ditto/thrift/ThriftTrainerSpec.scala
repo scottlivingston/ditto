@@ -8,7 +8,7 @@ class ThriftTrainerSpec extends WordSpec with Matchers with BeforeAndAfter {
 
   val server = new ThriftTestServer()
   val trainer = new ThriftTrainer()
-  val client = Thrift.client.newIface[Test.FutureIface](":8080")
+  val client = Thrift.client.withSessionPool.maxSize(2).newIface[EchoService.FutureIface](":8080")
 
   before {
     server.start()
@@ -22,11 +22,13 @@ class ThriftTrainerSpec extends WordSpec with Matchers with BeforeAndAfter {
 
   "ThriftTrainer" should {
     "proxy requests" in {
-      Await.result(client.rand())
-      Await.result(client.randMax(10))
+      Await.result(client.echoInt(1))
+      Await.result(client.echoInt(42))
+      Await.result(client.echoString("test"))
+      Await.result(client.echoString("woohoo"))
       println(trainer.conf)
 
-      trainer.conf should not be ""
+      trainer.conf should be("")
     }
   }
 }
