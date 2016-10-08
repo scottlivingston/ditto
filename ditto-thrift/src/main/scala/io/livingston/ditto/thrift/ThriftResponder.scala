@@ -40,7 +40,7 @@ class ThriftResponder extends Responder with LazyLogging {
             Try {
               val msg = thriftRequest.readMessageBegin()
               endpoints.get(msg.name).map { e =>
-                val response = Array.empty[Byte]
+                val response = e.body.toArray
                 Thread.sleep(e.latency.sleepTime)
                 Future.value(response)
               }.getOrElse {

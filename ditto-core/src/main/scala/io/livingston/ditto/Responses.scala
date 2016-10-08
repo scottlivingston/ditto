@@ -9,7 +9,7 @@ trait ServerConfig{
 
 trait Endpoint
 
-case class Latency(min: Int, max: Int) {
+case class Latency(min: Int = 0, max: Int = 0) {
   import scala.util.Random
   def sleepTime: Long = {
     Random.nextInt(max + 1 - min) + min

@@ -17,3 +17,4 @@ out/
 .idea
 .DS_Store
 *.pyc
+*.sc

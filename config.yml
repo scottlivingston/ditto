@@ -22,8 +22,8 @@ http:
 thrift:
 - port: 8082
   endpoints:
-  - msg: "test"
-    body: ""
+  - msg: "echoString"
+    body: "gAEAAgAAAAdlY2hvSW50AAAAAAgAAAAAAAEA"
     latency:
       min: 10
       max: 100

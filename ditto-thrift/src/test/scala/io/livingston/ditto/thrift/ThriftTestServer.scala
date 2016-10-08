@@ -2,9 +2,9 @@ package io.livingston.ditto.thrift
 import com.twitter.finagle.{ListeningServer, Thrift}
 import com.twitter.util.Future
 
-class ThriftTestServer {
+class ThriftTestServer(port: Int) {
   var server: Option[ListeningServer] = None
-  def start() = server = Option(Thrift.server.serveIface(":8081", new TestImpl()))
+  def start() = server = Option(Thrift.server.serveIface(s":$port", new TestImpl()))
   def close() = server.map(_.close())
 }
 

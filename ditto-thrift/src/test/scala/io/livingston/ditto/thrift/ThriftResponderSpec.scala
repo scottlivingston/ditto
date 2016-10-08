@@ -1,19 +1,19 @@
 package io.livingston.ditto.thrift
 
 import com.twitter.finagle.Thrift
-import com.twitter.util.{Await, Future}
+import com.twitter.util.Await
 import org.scalatest.{BeforeAndAfter, Matchers, WordSpec}
 
 class ThriftResponderSpec extends WordSpec with Matchers with BeforeAndAfter {
   val port = 8081
   val yaml =
-    """
+    s"""
       |---
       |thrift:
-      |- port: 8082
+      |- port: $port
       |  endpoints:
-      |  - msg: "test"
-      |    body: ""
+      |  - msg: "echoString"
+      |    body: "gAEAAgAAAAplY2hvU3RyaW5nAAAAAAsAAAAAAAR0ZXN0AA=="
       |    latency:
       |      min: 10
       |      max: 100
@@ -33,7 +33,8 @@ class ThriftResponderSpec extends WordSpec with Matchers with BeforeAndAfter {
   "Thrift config" should {
     "respond correctly to thrift requests" in {
       val client = Thrift.client.newIface[EchoService.FutureIface](s":$port")
-      val response = Await.result(client.echoInt(1))
+      val response = Await.result(client.echoString("test"))
+      response should be("test")
     }
   }
 }

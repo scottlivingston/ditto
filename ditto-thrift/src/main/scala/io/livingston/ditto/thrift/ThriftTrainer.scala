@@ -6,6 +6,7 @@ import com.twitter.finagle.thrift.{Protocols, ThriftClientRequest}
 import com.twitter.finagle.{ListeningServer, Service, Thrift}
 import com.twitter.util.{Await, Future}
 import com.typesafe.scalalogging.LazyLogging
+import io.livingston.ditto.Latency
 import org.apache.thrift.transport.TMemoryInputTransport
 
 import scala.util.Try
@@ -20,22 +21,23 @@ object CallRecord {
 }
 
 object ThriftTrainer extends App with LazyLogging {
-  val trainer = new ThriftTrainer()
+  val trainer = new ThriftTrainer(8080, 8081)
   trainer.start()
 
   sys.addShutdownHook {
-    println(trainer.conf)
+    println("Begin Config File")
+    println("---\n" + trainer.conf)
+    println("End Config File")
     trainer.close()
   }
 
   Await.ready(trainer.server.get)
 }
 
-class ThriftTrainer {
-  val port = 8080
-  val client = Thrift.client.newClient(s":8081").toService
-
-  var trainedResponses = Set.empty[CallRecord]
+class ThriftTrainer(servicePort: Int, listenPort: Int) {
+  val client = Thrift.client.newClient(s":$servicePort").toService
+  type Msg = String
+  var trainedResponses = Map.empty[Msg, ThriftEndpoint]
 
   val service = new Service[Array[Byte], Array[Byte]] {
     def apply(request: Array[Byte]): Future[Array[Byte]] = {
@@ -45,7 +47,7 @@ class ThriftTrainer {
         Try {
           val msg = thriftRequest.readMessageBegin()
           trainedResponses.synchronized {
-            trainedResponses = trainedResponses + CallRecord(msg.name, request, response)
+            trainedResponses = trainedResponses + (msg.name -> ThriftEndpoint(msg.name, response.toList, Latency()))
           }
         }
         response
@@ -55,19 +57,13 @@ class ThriftTrainer {
 
   var server: Option[ListeningServer] = None
 
-  def start() = server = Option(Thrift.server.serve(s":$port", service))
+  def start() = server = Option(Thrift.server.serve(s":$listenPort", service))
 
-  def conf: String = trainedResponses.foldLeft(Map.empty[String, Map[String, Set[String]]]) { (acc, call) =>
-      val requests = acc.get(call.msg) match {
-        case Some(rr) => rr
-        case None => Map.empty[String, Set[String]]
-      }
-      val responses = requests.get(call.request) match {
-        case Some(set) => set + call.response
-        case None => Set(call.response)
-      }
-      acc + (call.msg -> (requests + (call.request -> responses)))
-    }.toString
+  def conf: String = {
+    import net.jcazevedo.moultingyaml._
+    import ThriftResponsesProtocol._
+    ThriftResponses(List(ThriftServerConfig(servicePort, trainedResponses.values.toList))).toYaml.prettyPrint
+  }
 
   def close(): Unit = Await.all(client.close(), server.get.close())
 }
