@@ -1,11 +1,15 @@
 package io.livingston.ditto.thrift
 
+import java.net.ServerSocket
+
 import com.twitter.finagle.Thrift
 import com.twitter.util.Await
 import org.scalatest.{BeforeAndAfter, Matchers, WordSpec}
 
 class ThriftResponderSpec extends WordSpec with Matchers with BeforeAndAfter {
-  val port = 8081
+  val s = new ServerSocket(0)
+  val port = s.getLocalPort
+  s.close()
   val yaml =
     s"""
       |---
@@ -17,7 +21,6 @@ class ThriftResponderSpec extends WordSpec with Matchers with BeforeAndAfter {
       |    latency:
       |      min: 10
       |      max: 100
-      |
     """.stripMargin
 
   val server = new ThriftResponder()

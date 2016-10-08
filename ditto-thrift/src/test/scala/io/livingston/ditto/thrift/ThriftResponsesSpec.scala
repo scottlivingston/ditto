@@ -25,8 +25,8 @@ class ThriftResponsesSpec extends WordSpec with Matchers with BeforeAndAfter {
       )
     )
 
-  "ThriftEnpoint Protocol" should {
-    "be reversable" in {
+  "ThriftResponses Protocol" should {
+    "be reversible" in {
       import ThriftResponsesProtocol._
       import net.jcazevedo.moultingyaml._
       val yaml = original.toYaml.prettyPrint

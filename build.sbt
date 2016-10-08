@@ -22,11 +22,13 @@ lazy val ditto = Project(
     "com.typesafe" % "config" % "1.3.1"
   )
 ).dependsOn(dittoCore, dittoHttp, dittoThrift)
+ .aggregate(dittoCore, dittoHttp, dittoThrift)
 
-lazy val dittoCoreName = s"$dittoName-core"
+lazy val dittoCoreDir = s"$dittoName-core"
+lazy val dittoCoreName = s"${dittoName}Core"
 lazy val dittoCore = Project(
   id = dittoCoreName,
-  base = file(dittoCoreName),
+  base = file(dittoCoreDir),
   settings = Defaults.coreDefaultSettings ++
     sharedSettings
 ).settings(
@@ -38,10 +40,11 @@ lazy val dittoCore = Project(
   )
 )
 
-lazy val dittoHttpName = s"$dittoName-http"
+lazy val dittoHttpDir = s"$dittoName-http"
+lazy val dittoHttpName = s"${dittoName}Http"
 lazy val dittoHttp = Project(
   id = dittoHttpName,
-  base = file(dittoHttpName),
+  base = file(dittoHttpDir),
   settings = Defaults.coreDefaultSettings ++
     sharedSettings
 ).settings(
@@ -51,10 +54,11 @@ lazy val dittoHttp = Project(
   )
 ).dependsOn(dittoCore)
 
-lazy val dittoThriftName = s"$dittoName-thrift"
+lazy val dittoThriftDir = s"$dittoName-thrift"
+lazy val dittoThriftName = s"${dittoName}Thrift"
 lazy val dittoThrift = Project(
   id = dittoThriftName,
-  base = file(dittoThriftName),
+  base = file(dittoThriftDir),
   settings = Defaults.coreDefaultSettings ++
     sharedSettings
 ).settings(

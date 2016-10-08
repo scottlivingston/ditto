@@ -14,6 +14,7 @@ trait Responder extends LazyLogging {
     logger.info(s"\n$protocol:\n  port: $port\n${endpoints.map("    "+_).mkString("\n")}")
   }
   def apply(yaml: String): Unit
+  def close(): Unit
 
   def parse[T <: Responses](yaml: String, c: YamlValue => T)(f: T => Unit): Unit = {
     Try[T] {
