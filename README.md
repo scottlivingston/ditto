@@ -7,7 +7,6 @@ ditto is powered entirely by the YAML config file it reads.  A basic config
 that mocks a simple HTTP based service with one endpoint could look like this:
 
 ```yaml
----
 http:
 - port: 8081
   endpoints:
@@ -43,3 +42,38 @@ mocks.
 Both `ditto-http` and `ditto-thrift` use [finagle](https://github.com/twitter/finagle)
 to create the mocks, but that is not a requirement. Anything that listens to a
 port on its own thread will work correctly.
+
+### Thrift
+When using thrift, ditto will parse the supplied IDL files for specific 
+annotations and generate scala files that will output random valid responses.
+The responses are deterministic based on the input of the service call that way
+calling the function twice with the same input will always return the same
+response. 
+
+#### Annotations
+##### bool
+- `true`
+- `false`
+- `both`
+
+##### byte
+- `???`
+
+##### i16
+- `range` Inclusive range from minimum value to maxium value
+- ``
+- 
+
+##### i32
+
+
+##### i64
+
+
+##### double
+
+
+##### binary
+
+
+##### string
