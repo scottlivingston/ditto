@@ -7,7 +7,7 @@ type is pulled from field type
 
 
 ### String
-- `content=alpha|numeric|alphanumeric`
+- `content=alpha|numeric|alphaNumeric`
 - `length=0-10`
 - `style=firstUpper|upper|lower`
 

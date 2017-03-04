@@ -1,119 +1,81 @@
 package io.livingston.ditto.scrooge
 
-import nyaya.gen.{Gen, GenSize}
+import nyaya.gen.Gen
 
 object GenerationLanguageParser {
 
-  def string(genString: String): Primitive[String] = {
-
-    ???
+  object Range {
+    val positive = "positive"
+    val negative = "negative"
   }
 
-  case class StartsWith(s: String) {
-    def unapply(arg: String): Option[String] = if (arg.startsWith(s)) Some(arg) else None
+  object Content {
+    val alpha = "alpha"
+    val numeric = "numeric"
+    val alphaNumeric = "alphaNumeric"
+    val _true = "true"
+    val _false = "false"
   }
-  val length = StartsWith("length")
-  val content = StartsWith("content")
-  val style = StartsWith("style")
-  val range = StartsWith("range")
 
-  def parse(cs: List[Constraint], s: List[String]): List[Constraint] = {
-    s match {
-      case current :: remaining => current match {
-        case length(_) => parse(cs :+ Length(current), remaining)
-        case content(_) => parse(cs :+ Content(current), remaining)
-        case style(_) => parse(cs :+ Style(current), remaining)
-        case range(_) => parse(cs :+ Range(current), remaining)
+  object Style {
+    val firstUpper = "firstUpper"
+    val upper = "upper"
+    val lower = "lower"
+  }
+
+  def string(content: String = Content.alpha,
+             length: Either[Int, (Int, Int)] = Right(8, 12),
+             style: String = Style.lower): Gen[String] = {
+
+    val g: Gen[Char] = content match {
+      case Content.numeric => Gen.numeric
+      case Content.alphaNumeric => Gen.alphaNumeric
+      case Content.alpha => Gen.alpha
+      case _ => Gen.alpha
+    }
+    val s = style match {
+      case Style.upper => g.map(_.toUpper)
+      case Style.firstUpper => g
+      case Style.lower => g.map(_.toLower)
+      case _ => g.map(_.toLower)
+    }
+
+    s.string {
+      length match {
+        case Left(i) => i
+        case Right((l, h)) => l to h
       }
-
     }
   }
 
-  def apply[T](gen: String): Primitive[T] = {
-    val params = gen.split("\\s+")
-
-    val c = Gen.alpha //content
-    val s = c.map(_.toUpper)
-    val l = s.string(5) //length
-    l.withSeed(1)
-
-    s.withSeed(1).samples(GenSize(1)).next()
-
-    Gen.alpha.string(4).map(_.toUpperCase)
-    Gen.boolean.withSeed(1).samples()
-    ???
-  }
-}
-
-sealed trait ContentType
-sealed trait StringContentType extends ContentType
-case object AlphaNumeric extends StringContentType
-case object Alpha extends StringContentType
-case object Numeric extends StringContentType
-
-sealed trait BooleanContentType extends ContentType
-case object True extends BooleanContentType
-case object False extends BooleanContentType
-
-sealed trait StyleType
-case object FirstUpper extends StyleType
-case object Upper extends StyleType
-case object Lower extends StyleType
-
-sealed trait RangeType
-case object Positive extends RangeType
-case object Negative extends RangeType
-
-
-sealed trait Constraint
-case class Length(min: Long, max: Long) extends Constraint with RangeType
-case class Content(t: ContentType) extends Constraint
-case class Style(t: StyleType) extends Constraint
-case class Range(t: RangeType) extends Constraint
-
-object Length {
-  def apply(arg: String): Length = {
-    if (arg.matches("length=\\d+-\\d+")) {
-      val sub = arg.substring(7).split("-")
-      Length(sub(0).toLong, sub(1).toLong)
-    } else {
-      Length(Long.MinValue, Long.MaxValue)
+  private def numeric[A: Numeric](range: Either[String, (A, A)], pos: Gen[A], neg: Gen[A], choose: (A, A) => Gen[A]): Gen[A] = {
+    range match {
+      case Left(s) => s match {
+        case Range.negative => neg
+        case Range.positive => pos
+        case _ => pos
+      }
+      case Right((min, max)) => choose(min, max)
     }
   }
-}
-object Content {
-  def apply(arg: String): Content = {
-    if (arg.matches("content=(alpha|numeric|alphanumeric|true|false)")) {
-      arg.substring(8)
-      Content(sub(0).toLong, sub(1).toLong)
-    } else {
-      Content(Long.MinValue, Long.MaxValue)
+
+  def int(range: Either[String, (Int, Int)] = Left(Range.positive)): Gen[Int] = {
+    numeric(range, Gen.positiveInt, Gen.negativeInt, Gen.chooseInt)
+  }
+
+  def short(range: Either[String, (Int, Int)] = Left(Range.positive)): Gen[Short] = {
+    int(range).map(_.toShort)
+  }
+
+  def double(range: Either[String, (Double, Double)] = Left(Range.positive)): Gen[Double] = {
+    numeric(range, Gen.positiveDouble, Gen.negativeDouble, Gen.chooseDouble)
+  }
+
+  def bool(content: String): Gen[Boolean] = {
+    content match {
+      case Content._true => Gen.boolean.map(_ => true)
+      case Content._false => Gen.boolean.map(_ => false)
+      case _ => Gen.boolean
     }
   }
-}
-object Style {
-  def apply(arg: String): Style = {
-    if (arg.matches("length=\\d+-\\d+")) {
-      val sub = arg.substring(7).split("-")
-      Style(sub(0).toLong, sub(1).toLong)
-    } else {
-      Style(Long.MinValue, Long.MaxValue)
-    }
-  }
-}
-object Range {
-  def apply(arg: String): Range = {
-    if (arg.matches("length=\\d+-\\d+")) {
-      val sub = arg.substring(7).split("-")
-      Range(sub(0).toLong, sub(1).toLong)
-    } else {
-      Range(Long.MinValue, Long.MaxValue)
-    }
-  }
-}
-
-
-
-case class Primitive[T](f: Gen[T]) {
-  def apply(seed: Long): T = f.withSeed(seed).samples(GenSize(1)).next()
 }
