@@ -17,8 +17,10 @@ type is pulled from field type
 ### Boolean
 - `content=true|false`
 
-Map[K, V]
+### Binary
+- `length=0-10`
 
-List[T]
-
-Set[T]
+### Map[K, V], List[T], Set[T]
+- `size=0-10`
+- `k.???`
+- `v.???`
