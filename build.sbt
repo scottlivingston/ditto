@@ -21,7 +21,7 @@ lazy val ditto = Project(
   libraryDependencies ++= Seq(
     "com.typesafe" % "config" % "1.3.1"
   )
-).dependsOn(dittoCore, dittoHttp, dittoThrift)
+).dependsOn(dittoCore, dittoHttp, dittoThriftGenerator)
  .aggregate(dittoCore, dittoHttp, dittoThrift)
 
 lazy val dittoCoreDir = s"$dittoName-core"
@@ -66,5 +66,22 @@ lazy val dittoThrift = Project(
   scroogeThriftSourceFolder in Compile <<= baseDirectory { base => base / "src/test/thrift" },
   libraryDependencies ++= Seq(
     "com.twitter" %% "finagle-thrift" % "6.38.0"
+  )
+).dependsOn(dittoCore)
+
+lazy val dittoThriftGeneratorDir = s"$dittoName-thrift-generator"
+lazy val dittoThriftGeneratorName = s"${dittoName}ThriftGenerator"
+lazy val dittoThriftGenerator = Project(
+  id = dittoThriftGeneratorName,
+  base = file(dittoThriftGeneratorDir),
+  settings = Defaults.coreDefaultSettings ++
+    sharedSettings
+).settings(
+  name := dittoThriftGeneratorName,
+  scroogeThriftSourceFolder in Compile <<= baseDirectory { base => base / "src/main/thrift" },
+  libraryDependencies ++= Seq(
+    "com.twitter" %% "scrooge-generator" % "4.10.0",
+    "com.twitter" %% "finagle-thrift" % "6.38.0",
+    "com.github.japgolly.nyaya" %% "nyaya-gen" % "0.8.1"
   )
 ).dependsOn(dittoCore)
